@@ -10,22 +10,25 @@ Information for Newton GenX Schoolboys Football Club
 library(tidyverse)
 library(rvest)
 
-# Calculate next Saturday (or today if Saturday)
-next_saturday <- today() |>
+# Calculate next 5 Saturdays (or starting today if Saturday)
+first_saturday <- today() |>
   (\(d) if (wday(d, week_start = 1) == 6) d else d + days(6 - wday(d, week_start = 1)))()
 
-# Format the date to match the page format, e.g. "Saturday March 21, 2026"
-target_date <- next_saturday |>
-  format("%A %B %d, %Y") |>
-  str_replace(" 0", " ")
+saturdays <- first_saturday + weeks(0:3)
 
-# Function to fetch and filter reservations for a given field URL
-get_reservations <- \(url) {
+# Format a date to match the page format, e.g. "Saturday March 21, 2026"
+format_date <- \(d) {
+  d |>
+    format("%A %B %d, %Y") |>
+    str_replace(" 0", " ")
+}
+
+# Function to fetch reservations table from a field URL
+fetch_table <- \(url) {
   read_html(url) |>
     html_table() |>
     keep(\(tbl) "Date" %in% names(tbl)) |>
-    first() |>
-    filter(Date == target_date)
+    first()
 }
 
 # Define the two fields
@@ -35,20 +38,31 @@ fields <- tribble(
   "Stadium Field",  "https://newtonma.myrec.com/info/facilities/area_info.aspx?FacilityID=15013&AreaID=15034"
 )
 
-# Print reservations for each field
-cat("Field reservations for", target_date, "\n\n")
+# Fetch all tables once (avoid hitting the server repeatedly)
+tables <- fields |>
+  mutate(data = map(url, fetch_table))
 
-fields |>
-  pwalk(\(name, url) {
-    reservations <- get_reservations(url)
-    cat(name, ":\n")
-    if (is.null(reservations) || nrow(reservations) == 0) {
-      cat("  No reservations found.\n\n")
-    } else {
-      reservations |>
-        select(Event, Time) |>
-        pwalk(\(Event, Time) cat("  ", Event, " | ", Time, "\n"))
-      cat("\n")
-    }
+# Print reservations for each Saturday
+saturdays |>
+  walk(\(sat) {
+    target_date <- format_date(sat)
+    cat(target_date, "\n\n")
+
+    tables |>
+      pwalk(\(name, url, data) {
+        reservations <- data |>
+          filter(Date == target_date)
+        cat(name, ":\n", sep = "")
+        if (is.null(reservations) || nrow(reservations) == 0) {
+          cat("  No reservations found.\n\n")
+        } else {
+          reservations |>
+            select(Event, Time) |>
+            pwalk(\(Event, Time) cat("  ", Event, " | ", Time, "\n"))
+          cat("\n")
+        }
+      })
+
+    cat("\n")
   })
 ```
