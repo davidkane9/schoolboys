@@ -90,15 +90,46 @@ ul.task-list li input[type="checkbox"] {
 <p>Information for Newton GenX Schoolboys Football Club</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Field reservations for Saturday March 21, 2026 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Brandeis Field :
+<pre><code>Saturday March 21, 2026 
+
+Brandeis Field:
    NSHS Spring 2026 - Brandeis Field  |  09:00 AM - 03:00 PM 
 
-Stadium Field :
+Stadium Field:
    NSHS Spring 2026 - Stadium Field  |  09:00 AM - 01:30 PM 
-   Valeo Futbol FC 2026  |  01:30 PM - 06:30 PM </code></pre>
+   Valeo Futbol FC 2026  |  01:30 PM - 06:30 PM 
+
+
+Saturday March 28, 2026 
+
+Brandeis Field:
+   NSHS Spring 2026 - Brandeis Field  |  09:00 AM - 01:30 PM 
+   Newton Youth Soccer Spring 2026  |  02:00 PM - 05:00 PM 
+   Newton Girls Soccer Spring 2026  |  05:00 PM - 08:30 PM 
+
+Stadium Field:
+   NSHS Spring 2026 - Stadium Field  |  08:00 AM - 10:00 AM 
+   Mass Soccer - Spring Cup Finals  |  02:00 PM - 07:00 PM 
+
+
+Saturday April 4, 2026 
+
+Brandeis Field:
+   NSHS Spring 2026 - Brandeis Field  |  09:00 AM - 12:00 PM 
+
+Stadium Field:
+   NSHS Spring 2026 - Stadium Field  |  08:30 AM - 11:00 AM 
+   Newton Girls Soccer Spring 2026  |  02:00 PM - 08:00 PM 
+
+
+Saturday April 11, 2026 
+
+Brandeis Field:
+   NSHS Spring 2026 - Brandeis Field  |  09:00 AM - 01:30 PM 
+
+Stadium Field:
+   NSHS Spring 2026 - Stadium Field  |  08:30 AM - 12:00 PM 
+   Newton Girls Soccer Spring 2026  |  02:00 PM - 08:00 PM </code></pre>
 </div>
 </div>
 
@@ -177,7 +208,7 @@ Stadium Field :
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/davidkane9\.github\.io\/schoolboys\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
