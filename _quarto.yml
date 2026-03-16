@@ -3,11 +3,6 @@ project:
 
 website:
   title: "Schoolboys Information"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
 
 format:
   html:

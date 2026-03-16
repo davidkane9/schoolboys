@@ -1,7 +1,54 @@
 ---
-title: "Schoolboys Information"
+execute: 
+  echo: false
 ---
 
-This is a Quarto website.
+Information for Newton GenX Schoolboys Football Club
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+```{r}
+#| message: false
+library(tidyverse)
+library(rvest)
+
+# Calculate next Saturday (or today if Saturday)
+next_saturday <- today() |>
+  (\(d) if (wday(d, week_start = 1) == 6) d else d + days(6 - wday(d, week_start = 1)))()
+
+# Format the date to match the page format, e.g. "Saturday March 21, 2026"
+target_date <- next_saturday |>
+  format("%A %B %d, %Y") |>
+  str_replace(" 0", " ")
+
+# Function to fetch and filter reservations for a given field URL
+get_reservations <- \(url) {
+  read_html(url) |>
+    html_table() |>
+    keep(\(tbl) "Date" %in% names(tbl)) |>
+    first() |>
+    filter(Date == target_date)
+}
+
+# Define the two fields
+fields <- tribble(
+  ~name,            ~url,
+  "Brandeis Field", "https://newtonma.myrec.com/info/facilities/area_info.aspx?FacilityID=15013&AreaID=15160",
+  "Stadium Field",  "https://newtonma.myrec.com/info/facilities/area_info.aspx?FacilityID=15013&AreaID=15034"
+)
+
+# Print reservations for each field
+cat("Field reservations for", target_date, "\n\n")
+
+fields |>
+  pwalk(\(name, url) {
+    reservations <- get_reservations(url)
+    cat(name, ":\n")
+    if (is.null(reservations) || nrow(reservations) == 0) {
+      cat("  No reservations found.\n\n")
+    } else {
+      reservations |>
+        select(Event, Time) |>
+        pwalk(\(Event, Time) cat("  ", Event, " | ", Time, "\n"))
+      cat("\n")
+    }
+  })
+```
