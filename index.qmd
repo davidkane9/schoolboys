@@ -10,20 +10,18 @@ Information for Newton GenX Schoolboys Football Club
 library(tidyverse)
 library(rvest)
 
-# Calculate next 5 Saturdays (or starting today if Saturday)
-first_saturday <- today() |>
-  (\(d) if (wday(d, week_start = 1) == 6) d else d + days(6 - wday(d, week_start = 1)))()
+start_date <- today()
+end_date <- start_date + months(1)
 
-saturdays <- first_saturday + weeks(0:3)
+all_days <- seq(start_date, end_date, by = "day")
+saturdays <- all_days[wday(all_days, week_start = 1) == 6]
 
-# Format a date to match the page format, e.g. "Saturday March 21, 2026"
 format_date <- \(d) {
   d |>
     format("%A %B %d, %Y") |>
     str_replace(" 0", " ")
 }
 
-# Function to fetch reservations table from a field URL
 fetch_table <- \(url) {
   read_html(url) |>
     html_table() |>
@@ -31,38 +29,33 @@ fetch_table <- \(url) {
     first()
 }
 
-# Define the two fields
 fields <- tribble(
   ~name,            ~url,
   "Brandeis Field", "https://newtonma.myrec.com/info/facilities/area_info.aspx?FacilityID=15013&AreaID=15160",
   "Stadium Field",  "https://newtonma.myrec.com/info/facilities/area_info.aspx?FacilityID=15013&AreaID=15034"
 )
 
-# Fetch all tables once (avoid hitting the server repeatedly)
 tables <- fields |>
   mutate(data = map(url, fetch_table))
 
-# Print reservations for each Saturday
 saturdays |>
   walk(\(sat) {
     target_date <- format_date(sat)
+
+    all_reservations <- tables |>
+      pull(data) |>
+      map(\(d) filter(d, Date == target_date)) |>
+      bind_rows() |>
+      filter(str_detect(Time, "AM")) |>
+      select(Event, Time)
+
     cat(target_date, "\n\n")
-
-    tables |>
-      pwalk(\(name, url, data) {
-        reservations <- data |>
-          filter(Date == target_date)
-        cat(name, ":\n", sep = "")
-        if (is.null(reservations) || nrow(reservations) == 0) {
-          cat("  No reservations found.\n\n")
-        } else {
-          reservations |>
-            select(Event, Time) |>
-            pwalk(\(Event, Time) cat("  ", Event, " | ", Time, "\n"))
-          cat("\n")
-        }
-      })
-
+    if (nrow(all_reservations) > 0) {
+      all_reservations |>
+        pwalk(\(Event, Time) cat("  ", Event, " | ", Time, "\n"))
+    } else {
+      cat("   No morning reservations found.\n")
+    }
     cat("\n")
   })
 ```
